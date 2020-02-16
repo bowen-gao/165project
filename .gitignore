@@ -1,0 +1,5 @@
+
+.DS_Store
+*.pt
+examples/.data/mnist/MNIST/raw/t10k-images-idx3-ubyte
+*.gz
