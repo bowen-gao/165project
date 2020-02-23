@@ -88,7 +88,7 @@ class Dopri5Solver(AdaptiveStepsizeODESolver):
         lis=[]
 
         while next_t > self.rk_state.t1:
-            lis.append(self.rk_state.dt)
+            lis.append(self.rk_state.dt.numpy())
             assert n_steps < self.max_num_steps, 'max_num_steps exceeded ({}>={})'.format(n_steps, self.max_num_steps)
             self.rk_state = self._adaptive_dopri5_step(self.rk_state)
             n_steps += 1
