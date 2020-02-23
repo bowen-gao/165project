@@ -15,7 +15,7 @@ parser.add_argument('--network', type=str, choices=['resnet', 'odenet'], default
 parser.add_argument('--tol', type=float, default=1e-3)
 parser.add_argument('--adjoint', type=eval, default=False, choices=[True, False])
 parser.add_argument('--downsampling-method', type=str, default='conv', choices=['conv', 'res'])
-parser.add_argument('--nepochs', type=int, default=1)
+parser.add_argument('--nepochs', type=int, default=10)
 parser.add_argument('--data_aug', type=eval, default=False, choices=[True, False])
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--batch_size', type=int, default=1)
@@ -121,7 +121,6 @@ class ODEBlock(nn.Module):
         self.odefunc = odefunc
         self.integration_time = torch.tensor([0, 1]).float()
 
-
     def forward(self, x, tol):
         self.integration_time = self.integration_time.type_as(x)
         lis, out = odeint(self.odefunc, x, self.integration_time, rtol=tol, atol=tol)
@@ -182,19 +181,22 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
 
     data = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
     train_loader = DataLoader(
-        datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train), batch_size=batch_size,
+        datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
+        batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
         sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=train_num)
     )
     train_loader_new = DataLoader(
-        datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train), batch_size=batch_size,
+        datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
+        batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
         sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=oracle_num)
     )
-
+    eva = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
     train_eval_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test),
-        batch_size=test_batch_size, shuffle=False, num_workers=2, drop_last=True
+        batch_size=100, shuffle=False, num_workers=2, drop_last=True,
+        sampler=torch.utils.data.RandomSampler(eva, replacement=True, num_samples=100)
     )
     test_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=False, download=True, transform=transform_test),
@@ -244,6 +246,7 @@ def accuracy(model, dataset_loader, tol):
         _, temp = model(x, tol)
         temp = temp.cpu().detach().numpy()
         predicted_class = np.argmax(temp, axis=1)
+        print(predicted_class)
         total_correct += np.sum(predicted_class == target_class)
     return total_correct / len(dataset_loader.dataset)
 
@@ -284,7 +287,6 @@ def get_logger(logpath, filepath, package_files=[], displaying=True, saving=True
     return logger
 
 
-
 class NODEIMG(nn.Module):
 
     def __init__(self):
@@ -317,11 +319,6 @@ class NODEIMG(nn.Module):
         out = self.fcflatten(out)
         out = self.fclinear(out)
         return lis, out
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -361,6 +358,8 @@ if __name__ == '__main__':
     '''
     model = NODEIMG()
     criterion = nn.CrossEntropyLoss().to(device)
+    logger.info(model)
+    logger.info('Number of parameters: {}'.format(count_parameters(model)))
     train_num = 500
     oracle_num = 5000
     train_loader, test_loader, train_eval_loader, train_loader_new = get_cifar10_loaders(
@@ -393,17 +392,18 @@ if __name__ == '__main__':
         optimizer.zero_grad()
         x, y = data_gen.__next__()
         x = x.to(device)
-
+        '''
         if itr / train_num < 1:
             img = x.detach().numpy()
             img = np.squeeze(img)
             img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
             plt.imshow(img)
             plt.savefig('train/' + 'num' + str(itr) + '_label' + str(y) + '.png')
-
+        '''
         y = y.to(device)
         step_sizes, logits = model(x, tol)
         loss = criterion(logits, y)
+        print(loss)
 
         loss.backward()
         optimizer.step()
@@ -423,19 +423,19 @@ if __name__ == '__main__':
             b_nfe_meter.update(nfe_backward)
         end = time.time()
         '''
-        '''
+
         if itr % batches_per_epoch == 0:
             with torch.no_grad():
                 train_acc = accuracy(model, train_eval_loader, tol)
-                val_acc = accuracy(model, test_loader, tol)
-                if val_acc > best_acc:
-                    torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
-                    best_acc = val_acc
-                logger.info(
-                    "Epoch {:04d} | Time {:.3f} ({:.3f}) | NFE-F {:.1f} | NFE-B {:.1f} | "
-                    "Train Acc {:.4f} | Test Acc {:.4f}".format(
-                        itr // batches_per_epoch, batch_time_meter.val, batch_time_meter.avg, f_nfe_meter.avg,
-                        b_nfe_meter.avg, train_acc, val_acc
-                    )
-                )
-        '''
+                print(train_acc)
+                #val_acc = accuracy(model, test_loader, tol)
+                #if val_acc > best_acc:
+                #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
+
+
+
+
+
+
+
+
