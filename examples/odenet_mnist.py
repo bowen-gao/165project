@@ -342,7 +342,7 @@ if __name__ == '__main__':
         y = y.to(device)
         x = model1(x)
         n_steps, tmp = block1(x)
-        print(n_steps)
+        print(n_steps, x.shape)
         '''
         logits = model(x)
         loss = criterion(logits, y)
