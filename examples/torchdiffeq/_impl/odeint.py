@@ -73,8 +73,8 @@ def odeint(func, y0, t, rtol=1e-7, atol=1e-9, method=None, options=None):
         method = 'dopri5'
 
     solver = SOLVERS[method](func, y0, rtol=rtol, atol=atol, **options)
-    solution = solver.integrate(t)
+    n_steps, solution = solver.integrate(t)
 
     if tensor_input:
         solution = solution[0]
-    return solution
+    return n_steps, solution

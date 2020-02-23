@@ -28,9 +28,9 @@ class AdaptiveStepsizeODESolver(object):
         t = t.to(self.y0[0].device, torch.float64)
         self.before_integrate(t)
         for i in range(1, len(t)):
-            y = self.advance(t[i])
+            n_steps, y = self.advance(t[i])
             solution.append(y)
-        return tuple(map(torch.stack, tuple(zip(*solution))))
+        return n_steps, tuple(map(torch.stack, tuple(zip(*solution))))
 
 
 class FixedGridODESolver(object):

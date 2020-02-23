@@ -89,8 +89,8 @@ class Dopri5Solver(AdaptiveStepsizeODESolver):
             assert n_steps < self.max_num_steps, 'max_num_steps exceeded ({}>={})'.format(n_steps, self.max_num_steps)
             self.rk_state = self._adaptive_dopri5_step(self.rk_state)
             n_steps += 1
-        print(n_steps, next_t.size())
-        return _interp_evaluate(self.rk_state.interp_coeff, self.rk_state.t0, self.rk_state.t1, next_t)
+
+        return n_steps, _interp_evaluate(self.rk_state.interp_coeff, self.rk_state.t0, self.rk_state.t1, next_t)
 
     def _adaptive_dopri5_step(self, rk_state):
         """Take an adaptive Runge-Kutta step to integrate the ODE."""
