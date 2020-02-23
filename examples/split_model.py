@@ -356,7 +356,7 @@ if __name__ == '__main__':
     logger.info(model)
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
-    model = NODEIMG()
+    model = NODEIMG().to(device)
     criterion = nn.CrossEntropyLoss().to(device)
     logger.info(model)
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
