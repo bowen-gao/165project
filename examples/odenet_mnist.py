@@ -8,6 +8,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--network', type=str, choices=['resnet', 'odenet'], default='odenet')
@@ -17,7 +18,7 @@ parser.add_argument('--downsampling-method', type=str, default='conv', choices=[
 parser.add_argument('--nepochs', type=int, default=160)
 parser.add_argument('--data_aug', type=eval, default=True, choices=[True, False])
 parser.add_argument('--lr', type=float, default=0.1)
-parser.add_argument('--batch_size', type=int, default=128)
+parser.add_argument('--batch_size', type=int, default=1)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 
 parser.add_argument('--save', type=str, default='./experiment1')
@@ -164,6 +165,7 @@ class RunningAverageMeter(object):
 
 
 def get_mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc=1.0):
+
     if data_aug:
         transform_train = transforms.Compose([
             transforms.RandomCrop(28, padding=4),
@@ -177,10 +179,11 @@ def get_mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
     transform_test = transforms.Compose([
         transforms.ToTensor(),
     ])
-
+    data = datasets.MNIST(root='.data/mnist', train=True, download=True, transform=transform_train)
     train_loader = DataLoader(
-        datasets.MNIST(root='.data/mnist', train=True, download=True, transform=transform_train), batch_size=batch_size,
-        shuffle=True, num_workers=2, drop_last=True
+        datasets.MNIST(root='.data/mnist', train=True, download=True, transform=transform_train),
+        batch_size=batch_size, shuffle=False, num_workers=2, drop_last=True,
+        sampler= torch.utils.data.RandomSampler(data, replacement=True, num_samples=5000)
     )
 
     train_eval_loader = DataLoader(
@@ -333,6 +336,8 @@ if __name__ == '__main__':
     end = time.time()
 
     for itr in range(args.nepochs * batches_per_epoch):
+        if itr%100==0:
+            print(itr)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr_fn(itr)
 
@@ -340,9 +345,22 @@ if __name__ == '__main__':
         x, y = data_gen.__next__()
         x = x.to(device)
         y = y.to(device)
-        x = model1(x)
-        n_steps, tmp = block1(x)
-        print(n_steps, x.shape)
+        x_down = model1(x)
+        n_steps, tmp = block1(x_down)
+
+        if itr / batches_per_epoch > 1 and y == 8:
+            plt.imshow(x.cpu().detach().numpy().reshape((28, 28)), cmap='gray')
+            plt.title(['stepsize = ', len(n_steps)])
+            plt.show()
+
+        #print(n_steps, x.shape)
+
+        fc = nn.Sequential(*fc_layers).to(device)
+        logits = fc(tmp)
+        loss = criterion(logits, y)
+        loss.backward()
+        optimizer.step()
+
         '''
         logits = model(x)
         loss = criterion(logits, y)
@@ -350,10 +368,10 @@ if __name__ == '__main__':
         if is_odenet:
             nfe_forward = feature_layers[0].nfe
             feature_layers[0].nfe = 0
-
+    
         loss.backward()
         optimizer.step()
-
+        '
         if is_odenet:
             nfe_backward = feature_layers[0].nfe
             feature_layers[0].nfe = 0
@@ -378,4 +396,4 @@ if __name__ == '__main__':
                         b_nfe_meter.avg, train_acc, val_acc
                     )
                 )
-'''
+        '''
