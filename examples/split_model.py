@@ -252,7 +252,6 @@ def accuracy(model, dataset_loader, tol):
         _, temp = model(x, tol)
         temp = temp.cpu().detach().numpy()
         predicted_class = np.argmax(temp, axis=1)
-        print(predicted_class)
         total_correct += np.sum(predicted_class == target_class)
     return total_correct / len(dataset_loader.dataset)
 
