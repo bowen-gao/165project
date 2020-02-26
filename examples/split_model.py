@@ -180,12 +180,18 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
     ])
 
     data = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
+
     train_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
         sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=train_num)
     )
+    import collections
+    dic = collections.defaultdict(int)
+    for i, (inputs, targets) in enumerate(train_loader):
+        dic[targets.data.tolist()[0]] += 1
+    print(dic)
     train_loader_new = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
@@ -196,7 +202,7 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
     train_eval_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test),
         batch_size=100, shuffle=False, num_workers=2, drop_last=True,
-        sampler=torch.utils.data.RandomSampler(eva, replacement=True, num_samples=100)
+        sampler=torch.utils.data.RandomSampler(eva, replacement=True, num_samples=1000)
     )
     test_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=False, download=True, transform=transform_test),
@@ -331,31 +337,6 @@ if __name__ == '__main__':
 
     is_odenet = args.network == 'odenet'
 
-    '''
-    if args.downsampling_method == 'conv':
-        downsampling_layers = [
-            nn.Conv2d(3, 64, 3, 1),
-            norm(64),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, 4, 2, 1),
-            norm(64),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, 4, 2, 1),
-        ]
-    elif args.downsampling_method == 'res':
-        downsampling_layers = [
-            nn.Conv2d(3, 64, 3, 1),
-            ResBlock(64, 64, stride=2, downsample=conv1x1(64, 64, 2)),
-            ResBlock(64, 64, stride=2, downsample=conv1x1(64, 64, 2)),
-        ]
-
-    feature_layers = [ODEBlock(ODEfunc(64))] if is_odenet else [ResBlock(64, 64) for _ in range(6)]
-    fc_layers = [norm(64), nn.ReLU(inplace=True), nn.AdaptiveAvgPool2d((1, 1)), Flatten(), nn.Linear(64, 10)]
-
-    model = nn.Sequential(*downsampling_layers, *feature_layers, *fc_layers).to(device)
-    logger.info(model)
-    logger.info('Number of parameters: {}'.format(count_parameters(model)))
-    '''
     model = NODEIMG().to(device)
     criterion = nn.CrossEntropyLoss().to(device)
     logger.info(model)
@@ -384,8 +365,7 @@ if __name__ == '__main__':
 
     tol = 1e-3
     for itr in range(args.nepochs * batches_per_epoch):
-
-        print('iter = ', itr)
+        epoch = int(itr / batches_per_epoch)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr_fn(itr)
 
@@ -403,39 +383,15 @@ if __name__ == '__main__':
         y = y.to(device)
         step_sizes, logits = model(x, tol)
         loss = criterion(logits, y)
-        print(loss)
 
         loss.backward()
         optimizer.step()
-        '''
-        if is_odenet:
-            nfe_forward = feature_layers[0].nfe
-            feature_layers[0].nfe = 0
 
-        loss.backward()
-        optimizer.step()
-        if is_odenet:
-            nfe_backward = feature_layers[0].nfe
-            feature_layers[0].nfe = 0
-        batch_time_meter.update(time.time() - end)
-        if is_odenet:
-            f_nfe_meter.update(nfe_forward)
-            b_nfe_meter.update(nfe_backward)
-        end = time.time()
-        '''
-
-        if itr % batches_per_epoch == 0:
+        if itr != 0 and itr % batches_per_epoch == 0:
             with torch.no_grad():
                 train_acc = accuracy(model, train_eval_loader, tol)
                 print(train_acc)
-                #val_acc = accuracy(model, test_loader, tol)
-                #if val_acc > best_acc:
+                val_acc = accuracy(model, test_loader, tol)
+                print(val_acc)
+                # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
-
-
-
-
-
-
-
-
