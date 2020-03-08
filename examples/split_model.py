@@ -371,6 +371,7 @@ if __name__ == '__main__':
 
         optimizer.zero_grad()
         x, y = data_gen.__next__()
+        print(x)
         x = x.to(device)
         '''
         if itr / train_num < 1:
