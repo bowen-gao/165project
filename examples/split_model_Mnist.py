@@ -365,7 +365,6 @@ if __name__ == '__main__':
 
     tol = 1e-3
     for itr in range(args.nepochs * batches_per_epoch):
-        print(itr)
         epoch = int(itr / batches_per_epoch)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr_fn(itr)
