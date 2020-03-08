@@ -399,11 +399,11 @@ if __name__ == '__main__':
             x = x.to(device)
             y = y.to(device)
 
-            img = x.detach().numpy()
+            img = x.detach().cpu().numpy()
             img = np.squeeze(img)
             img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
             plt.imshow(img)
-            plt.savefig('oracle/' + '_label' + str(y.detach().item()) + 'num' + str(i) + '.png')
+            plt.savefig('oracle/' + '_label' + str(y.detach().cpu().item()) + 'num' + str(i) + '.png')
 
             step_sizes, logits = model(x, tol)
             stepsizes_list.append(step_sizes)
