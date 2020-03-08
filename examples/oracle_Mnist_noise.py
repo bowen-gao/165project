@@ -189,10 +189,10 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=train_num)
     )
 
-    train_index = np.loadtxt('test.txt')
+    train_index = np.loadtxt('indices_mnist.txt')
     index = np.arange(50000)
     temp = np.delete(index, train_index)
-    oracle_index = np.random.choice(temp, 20000, replace=False)
+    oracle_index = np.random.choice(temp, 2000, replace=False)
     train_loader_new = DataLoader(
         datasets.MNIST(root='.data/MNIST', train=True, download=True, transform=transform_train), batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
@@ -369,7 +369,7 @@ if __name__ == '__main__':
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
     #model = NODEIMG()
-    model = torch.load('aaa', map_location=torch.device('cpu'))
+    model = torch.load("models/mnist", map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     train_num = 500
     oracle_num = 5000
@@ -459,11 +459,13 @@ if __name__ == '__main__':
         for y in range(10):
             plt.hist(stepnum[y])
             plt.savefig('hist/hist_'+str(y))
+            plt.clf()
 
         if args.noise_std != 0:
             for y in range(10):
                 plt.hist(stepnum[y])
                 plt.savefig('hist/hist_noise_'+str(args.noise_std)+str(y))
+                plt.clf()
 
 
 
