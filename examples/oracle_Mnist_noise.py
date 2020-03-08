@@ -124,7 +124,6 @@ class ODEBlock(nn.Module):
         self.odefunc = odefunc
         self.integration_time = torch.tensor([0, 1]).float()
 
-
     def forward(self, x, tol):
         self.integration_time = self.integration_time.type_as(x)
         lis, out = odeint(self.odefunc, x, self.integration_time, rtol=tol, atol=tol)
@@ -292,7 +291,6 @@ def get_logger(logpath, filepath, package_files=[], displaying=True, saving=True
     return logger
 
 
-
 class NODEIMG(nn.Module):
 
     def __init__(self):
@@ -332,8 +330,6 @@ def addnoise(x, noise_std):
     return x_noise
 
 
-
-
 if __name__ == '__main__':
 
     makedirs(args.save)
@@ -369,7 +365,7 @@ if __name__ == '__main__':
     logger.info(model)
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
-    #model = NODEIMG()
+    # model = NODEIMG()
     model = torch.load("models/mnist", map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     train_num = 500
@@ -378,7 +374,7 @@ if __name__ == '__main__':
         args.data_aug, args.batch_size, args.test_batch_size, train_num=train_num, oracle_num=oracle_num
     )
 
-    #data_gen = inf_generator(oracle_loader)
+    # data_gen = inf_generator(oracle_loader)
     batches_per_epoch = len(oracle_loader)
 
     lr_fn = learning_rate_with_decay(
@@ -407,23 +403,23 @@ if __name__ == '__main__':
 
         for i, (x, y) in enumerate(oracle_loader):
             print(i)
-            #x = images.cuda(async=True)
-            #y = labels.cuda(async=True)
+            # x = images.cuda(async=True)
+            # y = labels.cuda(async=True)
             x = x.to(device)
 
             y = y.to(device)
 
-            #img = x.detach().cpu().numpy()
-            #img = np.squeeze(img)
-            #img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
-            #plt.imshow(img)
-            #plt.savefig('oracle/' + '_label' + str(y.detach().item()) + 'num' + str(i) + '.png')
+            # img = x.detach().cpu().numpy()
+            # img = np.squeeze(img)
+            # img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
+            # plt.imshow(img)
+            # plt.savefig('oracle/' + '_label' + str(y.detach().item()) + 'num' + str(i) + '.png')
 
             step_sizes, logits = model(x, tol)
             stepsizes_list.append(step_sizes)
-            print("no noise:",len(step_sizes))
+            print("no noise:", len(step_sizes))
             stepnum[y].append(len(step_sizes))
-            #print(stepnum[y])
+            # print(stepnum[y])
             loss = criterion(logits, y)
             loss_list.append(loss.detach().item())
             with open("oracle/size_loss.txt", 'w') as f:
@@ -436,24 +432,21 @@ if __name__ == '__main__':
                 stepsizes_noise_list.append(step_sizes_noise)
                 print('noise:', len(step_sizes_noise))
                 stepnum_noise[y].append(len(step_sizes_noise))
-                #print(stepnum[y])
+                # print(stepnum[y])
                 loss_noise = criterion(logits_noise, y)
                 loss_noise_list.append(loss_noise.detach().item())
                 with open("oracle/size_loss_noise.txt", 'w') as f:
                     for i in range(len(stepsizes_list)):
                         f.write(str(stepsizes_list[i]) + "," + str(loss_list[i]) + "\n")
 
-
-
-
         with open("oracle/stepnum.txt", 'w') as f:
             for i in range(len(stepnum)):
-                f.write(','.join(stepnum_noise[i])+"\n")
+                f.write(str(stepnum[i])[1:-1] + "\n")
 
         if args.noise_std != 0:
             with open("oracle/stepnum_noise.txt", 'w') as f:
                 for i in range(len(stepnum_noise)):
-                    f.write(','.join(stepnum_noise[i])+"\n")
+                    f.write(str(stepnum_noise[i])[1:-1] + "\n")
 
         ''' 
         for y in range(10):
@@ -463,9 +456,6 @@ if __name__ == '__main__':
             plt.savefig('hist/hist_'+str(y))
             plt.clf()
         '''
-
-
-
 
 '''
     for itr in range(args.nepochs * batches_per_epoch):
@@ -523,8 +513,3 @@ if __name__ == '__main__':
                 )
         
 '''
-
-
-
-
-
