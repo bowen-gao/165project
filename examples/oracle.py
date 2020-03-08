@@ -418,7 +418,7 @@ if __name__ == '__main__':
 
         for y in range(10):
             plt.hist(stepnum[y])
-            plt.show()
+            plt.savefig("hist.png")
 
 '''
     for itr in range(args.nepochs * batches_per_epoch):
