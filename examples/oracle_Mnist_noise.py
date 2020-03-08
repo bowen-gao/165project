@@ -391,14 +391,10 @@ if __name__ == '__main__':
     end = time.time()
 
     print('new')
-    stepsizes_list = []
-    stepsizes_noise_list = []
-    stepnum = [[] for j in range(10)]
-    stepnum_noise = [[] for j in range(10)]
-    loss_list = []
-    loss_noise_list = []
+    stepnum_list = [[[] for j in range(10)] for i in range(4)]
+    loss_list = [[[] for j in range(10)] for i in range(4)]
     tol = args.tol / 100000
-
+    noise = [0, 0.1, 0.5, 1]
     with torch.no_grad():
 
         for i, (x, y) in enumerate(oracle_loader):
@@ -415,38 +411,28 @@ if __name__ == '__main__':
             # plt.imshow(img)
             # plt.savefig('oracle/' + '_label' + str(y.detach().item()) + 'num' + str(i) + '.png')
 
-            step_sizes, logits = model(x, tol)
-            stepsizes_list.append(step_sizes)
-            print("no noise:", len(step_sizes))
-            stepnum[y].append(len(step_sizes))
-            # print(stepnum[y])
-            loss = criterion(logits, y)
-            loss_list.append(loss.detach().item())
-            with open("oracle/size_loss.txt", 'w') as f:
-                for i in range(len(stepsizes_list)):
-                    f.write(str(stepsizes_list[i]) + "," + str(loss_list[i]) + "\n")
 
-            if args.noise_std != 0:
-                x_noise = addnoise(x, args.noise_std)
-                step_sizes_noise, logits_noise = model(x_noise, tol)
-                stepsizes_noise_list.append(step_sizes_noise)
-                print('noise:', len(step_sizes_noise))
-                stepnum_noise[y].append(len(step_sizes_noise))
+
+
+            for i, n in enumerate(noise):
+                x_noise = addnoise(x, n)
+                step_sizes, logits = model(x_noise, tol)
+                stepnum_list[i][y].append(len(step_sizes))
                 # print(stepnum[y])
-                loss_noise = criterion(logits_noise, y)
-                loss_noise_list.append(loss_noise.detach().item())
-                with open("oracle/size_loss_noise.txt", 'w') as f:
-                    for i in range(len(stepsizes_list)):
-                        f.write(str(stepsizes_list[i]) + "," + str(loss_list[i]) + "\n")
+                loss = criterion(logits, y)
+                loss_list[i][y].append(loss.detach().item())
+
 
         with open("oracle/stepnum.txt", 'w') as f:
-            for i in range(len(stepnum)):
-                f.write(str(stepnum[i])[1:-1] + "\n")
+            for i in range(len(noise)):
+                for y in range(len(stepnum_list[i])):
+                    f.write(str(stepnum_list[i][y])[1:-1] + "\n")
 
-        if args.noise_std != 0:
-            with open("oracle/stepnum_noise.txt", 'w') as f:
-                for i in range(len(stepnum_noise)):
-                    f.write(str(stepnum_noise[i])[1:-1] + "\n")
+
+        with open("oracle/loss.txt", 'w') as f:
+            for i in range(len(noise)):
+                for y in range(len(loss_list[i])):
+                    f.write(str(loss_list[i][y])[1:-1] + "\n")
 
         ''' 
         for y in range(10):
