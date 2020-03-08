@@ -181,7 +181,7 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
 
     data = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
     indices = np.random.choice(len(data.data), 5000, replace=False)
-    np.save("indices", indices)
+    np.savetxt("indices.txt", indices)
     train_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
