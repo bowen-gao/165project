@@ -394,7 +394,6 @@ if __name__ == '__main__':
     b_nfe_meter = RunningAverageMeter()
     end = time.time()
 
-    tol = 1e-3
     print('new')
     stepsizes_list = []
     stepsizes_noise_list = []
@@ -402,7 +401,7 @@ if __name__ == '__main__':
     stepnum_noise = [[] for j in range(10)]
     loss_list = []
     loss_noise_list = []
-    tol = tol / 10000
+    tol = args.tol / 100000
 
     with torch.no_grad():
 
@@ -449,21 +448,21 @@ if __name__ == '__main__':
 
         with open("oracle/stepnum.txt", 'w') as f:
             for i in range(len(stepnum)):
-                f.writelines(str(stepnum[i]))
+                f.write(','.join(stepnum_noise[i])+"\n")
 
         if args.noise_std != 0:
             with open("oracle/stepnum_noise.txt", 'w') as f:
                 for i in range(len(stepnum_noise)):
-                    f.writelines(str(stepnum_noise[i]))
+                    f.write(','.join(stepnum_noise[i])+"\n")
 
-
+        ''' 
         for y in range(10):
             plt.hist(stepnum[y])
             if args.noise_std!=0:
-                plt.hist(stepnum[y])
+                plt.hist(stepnum_noise[y])
             plt.savefig('hist/hist_'+str(y))
             plt.clf()
-
+        '''
 
 
 
