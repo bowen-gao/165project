@@ -425,7 +425,7 @@ if __name__ == '__main__':
 
         for y in range(10):
             plt.hist(stepnum[y])
-            plt.savefig("hist_mnist.png")
+            plt.savefig(str(y)+"_hist_mnist.png")
 
 
 
