@@ -366,7 +366,7 @@ if __name__ == '__main__':
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
     #model = NODEIMG()
-    model = torch.load('models/aaa', map_location=torch.device('cpu'))
+    model = torch.load('models/mnist', map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     train_num = 500
     oracle_num = 5000
