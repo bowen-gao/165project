@@ -188,8 +188,8 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=train_num)
     )
 
-    train_index = np.loadtxt('test.txt')
-    index = np.arange(50000)
+    train_index = np.loadtxt('indices_mnist.txt')
+    index = np.arange(60000)
     temp = np.delete(index, train_index)
     oracle_index = np.random.choice(temp, 20000, replace=False)
     train_loader_new = DataLoader(

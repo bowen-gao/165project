@@ -181,7 +181,7 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
 
     data = datasets.MNIST(root='.data/Mnist', train=True, download=True, transform=transform_test)
     indices = np.random.choice(len(data.data), 5000, replace=False)
-    np.savetxt("indices.txt", indices)
+    np.savetxt("indices_mnist.txt", indices)
     train_loader = DataLoader(
         datasets.MNIST(root='.data/Mnist', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
