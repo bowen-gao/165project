@@ -393,7 +393,7 @@ if __name__ == '__main__':
     with torch.no_grad():
 
         for i, (x, y) in enumerate(oracle_loader):
-            print(i)
+            print("step ",i)
             # x = images.cuda(async=True)
             # y = labels.cuda(async=True)
             x = x.to(device)
@@ -409,7 +409,7 @@ if __name__ == '__main__':
             stepsizes_list.append(step_sizes)
             print(len(step_sizes))
             stepnum[y].append(len(step_sizes))
-            print(stepnum[y])
+            #print(stepnum[y])
             loss = criterion(logits, y)
             loss_list.append(loss.detach().item())
             with open("oracle/size_loss.txt", 'w') as f:
