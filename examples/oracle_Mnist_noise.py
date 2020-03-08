@@ -20,6 +20,7 @@ parser.add_argument('--nepochs', type=int, default=10)
 parser.add_argument('--data_aug', type=eval, default=False, choices=[True, False])
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--batch_size', type=int, default=1)
+parser.add_argument('--oracle_size', type=int, default=1000)
 parser.add_argument('--test_batch_size', type=int, default=1000)
 
 parser.add_argument('--save', type=str, default='./experiment1')
@@ -192,7 +193,7 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
     train_index = np.loadtxt('indices_mnist.txt')
     index = np.arange(50000)
     temp = np.delete(index, train_index)
-    oracle_index = np.random.choice(temp, 2000, replace=False)
+    oracle_index = np.random.choice(temp, args.oracle_size, replace=False)
     train_loader_new = DataLoader(
         datasets.MNIST(root='.data/MNIST', train=True, download=True, transform=transform_train), batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
@@ -448,24 +449,21 @@ if __name__ == '__main__':
 
         with open("oracle/stepnum.txt", 'w') as f:
             for i in range(len(stepnum)):
-                f.writelines(stepnum[i])
+                f.writelines(str(stepnum[i]))
 
         if args.noise_std != 0:
             with open("oracle/stepnum_noise.txt", 'w') as f:
                 for i in range(len(stepnum_noise)):
-                    f.writelines(stepnum_noise[i])
+                    f.writelines(str(stepnum_noise[i]))
 
 
         for y in range(10):
             plt.hist(stepnum[y])
+            if args.noise_std!=0:
+                plt.hist(stepnum[y])
             plt.savefig('hist/hist_'+str(y))
             plt.clf()
 
-        if args.noise_std != 0:
-            for y in range(10):
-                plt.hist(stepnum[y])
-                plt.savefig('hist/hist_noise_'+str(args.noise_std)+str(y))
-                plt.clf()
 
 
 
