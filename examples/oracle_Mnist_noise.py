@@ -421,9 +421,9 @@ if __name__ == '__main__':
 
             step_sizes, logits = model(x, tol)
             stepsizes_list.append(step_sizes)
-            print(len(step_sizes))
+            print("no noise:",len(step_sizes))
             stepnum[y].append(len(step_sizes))
-            print(stepnum[y])
+            #print(stepnum[y])
             loss = criterion(logits, y)
             loss_list.append(loss.detach().item())
             with open("oracle/size_loss.txt", 'w') as f:
@@ -434,7 +434,7 @@ if __name__ == '__main__':
                 x_noise = addnoise(x, args.noise_std)
                 step_sizes_noise, logits_noise = model(x_noise, tol)
                 stepsizes_noise_list.append(step_sizes_noise)
-                print('noise', len(step_sizes_noise))
+                print('noise:', len(step_sizes_noise))
                 stepnum_noise[y].append(len(step_sizes_noise))
                 #print(stepnum[y])
                 loss_noise = criterion(logits_noise, y)
