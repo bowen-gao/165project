@@ -180,12 +180,12 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
     ])
 
     data = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
-
+    indices = np.random.choice(len(data.data), 5000, replace=False)
     train_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
         shuffle=False, num_workers=2, drop_last=True,
-        sampler=torch.utils.data.RandomSampler(data, replacement=True, num_samples=train_num)
+        sampler=torch.utils.data.SubsetRandomSampler(indices)
     )
     import collections
     dic = collections.defaultdict(int)
@@ -388,9 +388,10 @@ if __name__ == '__main__':
 
         if itr != 0 and itr % batches_per_epoch == 0:
             with torch.no_grad():
-                train_acc = accuracy(model, train_eval_loader, tol)
-                print(train_acc)
+                #train_acc = accuracy(model, train_eval_loader, tol)
+                #print(train_acc)
                 val_acc = accuracy(model, test_loader, tol)
                 print(val_acc)
                 # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
+    torch.save(model, "models/aaa")
