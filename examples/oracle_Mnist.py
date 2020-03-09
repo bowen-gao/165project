@@ -122,7 +122,6 @@ class ODEBlock(nn.Module):
         self.odefunc = odefunc
         self.integration_time = torch.tensor([0, 1]).float()
 
-
     def forward(self, x, tol):
         self.integration_time = self.integration_time.type_as(x)
         lis, out = odeint(self.odefunc, x, self.integration_time, rtol=tol, atol=tol)
@@ -192,10 +191,10 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
     index = np.arange(60000)
     temp = np.delete(index, train_index)
     oracle_index = np.random.choice(temp, 20000, replace=False)
-    train_loader_new = DataLoader(
-        datasets.MNIST(root='.data/MNIST', train=True, download=True, transform=transform_train), batch_size=batch_size,
-        shuffle=False, num_workers=2, drop_last=True,
-        sampler=torch.utils.data.SubsetRandomSampler(oracle_index)
+    oracle_loader = DataLoader(
+        datasets.MNIST(root='.data/MNIST', train=True, download=True, transform=transform_train), batch_size=1,
+        shuffle=False, num_workers=2, drop_last=False,
+        # sampler=torch.utils.data.SubsetRandomSampler(oracle_index)
     )
 
     train_eval_loader = DataLoader(
@@ -207,7 +206,7 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         batch_size=test_batch_size, shuffle=False, num_workers=2, drop_last=True
     )
 
-    return train_loader, test_loader, train_eval_loader, train_loader_new
+    return train_loader, test_loader, train_eval_loader, oracle_loader
 
 
 def inf_generator(iterable):
@@ -290,7 +289,6 @@ def get_logger(logpath, filepath, package_files=[], displaying=True, saving=True
     return logger
 
 
-
 class NODEIMG(nn.Module):
 
     def __init__(self):
@@ -323,11 +321,6 @@ class NODEIMG(nn.Module):
         out = self.fcflatten(out)
         out = self.fclinear(out)
         return lis, out
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -365,7 +358,7 @@ if __name__ == '__main__':
     logger.info(model)
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
-    #model = NODEIMG()
+    # model = NODEIMG()
     model = torch.load('models/mnist', map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     train_num = 500
@@ -374,7 +367,7 @@ if __name__ == '__main__':
         args.data_aug, args.batch_size, args.test_batch_size, train_num=train_num, oracle_num=oracle_num
     )
 
-    #data_gen = inf_generator(oracle_loader)
+    # data_gen = inf_generator(oracle_loader)
     batches_per_epoch = len(oracle_loader)
 
     lr_fn = learning_rate_with_decay(
@@ -400,37 +393,36 @@ if __name__ == '__main__':
 
         for i, (x, y) in enumerate(oracle_loader):
             print(i)
-            #x = images.cuda(async=True)
-            #y = labels.cuda(async=True)
+            # x = images.cuda(async=True)
+            # y = labels.cuda(async=True)
             x = x.to(device)
             y = y.to(device)
-
+            '''
             img = x.detach().cpu().numpy()
             img = np.squeeze(img)
             #img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
             plt.imshow(img)
             plt.savefig('oracle/' + '_label' + str(y.detach().item()) + 'num' + str(i) + '.png')
-
+            '''
             step_sizes, logits = model(x, tol)
             stepsizes_list.append(step_sizes)
-            print(len(step_sizes))
             stepnum[y].append(len(step_sizes))
-            print(stepnum[y])
-            loss = criterion(logits, y)
-            loss_list.append(loss.detach().item())
+
+            with open("oracle/allsteps.txt", 'w') as f:
+                f.write(str(len(step_sizes)) + '\n')
+            # loss = criterion(logits, y)
+            # loss_list.append(loss.detach().item())
+            '''
             with open("oracle/size_loss.txt", 'w') as f:
                 for i in range(len(stepsizes_list)):
                     f.write(str(stepsizes_list[i]) + "," + str(loss_list[i]) + "\n")
-
-
+            '''
+        '''
         for y in range(10):
             plt.hist(stepnum[y])
             plt.savefig(str(y)+"_hist_mnist.png")
             plt.clf()
-
-
-
-
+        '''
 
 '''
     for itr in range(args.nepochs * batches_per_epoch):
@@ -488,8 +480,3 @@ if __name__ == '__main__':
                 )
         
 '''
-
-
-
-
-
