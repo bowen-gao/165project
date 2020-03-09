@@ -408,7 +408,7 @@ if __name__ == '__main__':
             stepsizes_list.append(step_sizes)
             stepnum[y].append(len(step_sizes))
 
-            with open("oracle/allsteps.txt", 'w') as f:
+            with open("oracle/allsteps.txt", 'a') as f:
                 f.write(str(len(step_sizes)) + '\n')
             # loss = criterion(logits, y)
             # loss_list.append(loss.detach().item())
