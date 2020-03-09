@@ -388,7 +388,7 @@ if __name__ == '__main__':
     stepsizes_list = []
     stepnum = [[] for j in range(10)]
     loss_list = []
-    tol = tol / 10000
+    tol = tol / 100000
     with torch.no_grad():
 
         for i, (x, y) in enumerate(oracle_loader):
