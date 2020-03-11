@@ -23,6 +23,7 @@ parser.add_argument('--test_batch_size', type=int, default=1000)
 
 parser.add_argument('--save', type=str, default='./experiment1')
 parser.add_argument('--debug', action='store_true')
+parser.add_argument('--random_select', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
 args = parser.parse_args()
 
@@ -179,8 +180,10 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
         transforms.ToTensor(),
     ])
     ids = np.loadtxt("ids.txt", dtype=int)
-    print(ids)
     data = datasets.MNIST(root='.data/Mnist', train=True, download=True, transform=transform_test)
+    random_ids = np.random.choice(len(data.data), 5000, replace=False)
+    if args.random_select:
+        ids = random_ids
     train_loader = DataLoader(
         datasets.MNIST(root='.data/Mnist', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
