@@ -181,7 +181,7 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
     ])
     ids = np.loadtxt("ids.txt", dtype=int)
     data = datasets.MNIST(root='.data/Mnist', train=True, download=True, transform=transform_test)
-    random_ids = np.random.choice(len(data.data), 5000, replace=False)
+    random_ids = np.random.choice(len(data.data), 600, replace=False)
     if args.random_select:
         ids = random_ids
     train_loader = DataLoader(
