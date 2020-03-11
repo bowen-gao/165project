@@ -339,7 +339,7 @@ if __name__ == '__main__':
 
     is_odenet = args.network == 'odenet'
 
-    model = torch.load('models/mnist', map_location=device)
+    model = torch.load('models/mnist_500', map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     logger.info(model)
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
