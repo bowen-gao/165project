@@ -191,10 +191,11 @@ def get_Mnist_loaders(data_aug=False, batch_size=128, test_batch_size=1000, perc
     index = np.arange(60000)
     temp = np.delete(index, train_index)
     oracle_index = np.random.choice(temp, 20000, replace=False)
+    oracle_index = np.arange(6000)
     oracle_loader = DataLoader(
         datasets.MNIST(root='.data/MNIST', train=True, download=True, transform=transform_train), batch_size=1,
         shuffle=False, num_workers=2, drop_last=False,
-        # sampler=torch.utils.data.SubsetRandomSampler(oracle_index)
+        sampler=torch.utils.data.SubsetRandomSampler(oracle_index)
     )
 
     train_eval_loader = DataLoader(
@@ -408,7 +409,7 @@ if __name__ == '__main__':
             stepsizes_list.append(step_sizes)
             stepnum[y].append(len(step_sizes))
 
-            with open("oracle/allsteps.txt", 'a') as f:
+            with open("oracle/allsteps_500.txt", 'a') as f:
                 f.write(str(len(step_sizes)) + '\n')
             # loss = criterion(logits, y)
             # loss_list.append(loss.detach().item())
