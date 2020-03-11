@@ -245,7 +245,7 @@ def one_hot(x, K):
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
 
 
-def accuracy(model, dataset_loader, tol):
+def accuracy(model, dataset_loader, tol,type):
     total_correct = 0
     total_loss = 0.0
     for x, y in dataset_loader:
@@ -258,7 +258,10 @@ def accuracy(model, dataset_loader, tol):
         logits = logits.cpu().detach().numpy()
         predicted_class = np.argmax(logits, axis=1)
         total_correct += np.sum(predicted_class == target_class)
-    return total_loss/len(dataset_loader.dataset), total_correct / len(dataset_loader.dataset)
+    if type=="train":
+        return total_loss/len(dataset_loader), total_correct / 600
+    else:
+        return total_loss/len(dataset_loader), total_correct / 10000
 
 
 def count_parameters(model):
@@ -385,9 +388,9 @@ if __name__ == '__main__':
 
         if itr != 0 and itr % batches_per_epoch == 0:
             with torch.no_grad():
-                train_loss, train_acc = accuracy(model, train_loader, tol)
+                train_loss, train_acc = accuracy(model, train_loader, tol,"train")
                 # print(train_acc)
-                val_loss, val_acc = accuracy(model, test_loader, tol)
+                val_loss, val_acc = accuracy(model, test_loader, tol,"val")
                 print(train_loss, train_acc, val_loss, val_acc)
                 # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
