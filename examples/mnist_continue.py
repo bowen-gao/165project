@@ -245,7 +245,7 @@ def one_hot(x, K):
     return np.array(x[:, None] == np.arange(K)[None, :], dtype=int)
 
 
-def accuracy(model, dataset_loader, tol,type):
+def accuracy(model, dataset_loader, tol, type):
     total_correct = 0
     total_loss = 0.0
     for x, y in dataset_loader:
@@ -258,10 +258,10 @@ def accuracy(model, dataset_loader, tol,type):
         logits = logits.cpu().detach().numpy()
         predicted_class = np.argmax(logits, axis=1)
         total_correct += np.sum(predicted_class == target_class)
-    if type=="train":
-        return total_loss/len(dataset_loader), total_correct / 600
+    if type == "train":
+        return total_loss / len(dataset_loader), total_correct / 600
     else:
-        return total_loss/len(dataset_loader), total_correct / 10000
+        return total_loss / len(dataset_loader), total_correct / 10000
 
 
 def count_parameters(model):
@@ -371,6 +371,10 @@ if __name__ == '__main__':
     end = time.time()
 
     tol = 1e-3
+    train_loss_list = []
+    train_acc_list = []
+    test_loss_list = []
+    test_acc_list = []
     for itr in range(args.nepochs * batches_per_epoch):
         epoch = int(itr / batches_per_epoch)
         for param_group in optimizer.param_groups:
@@ -388,10 +392,18 @@ if __name__ == '__main__':
 
         if itr != 0 and itr % batches_per_epoch == 0:
             with torch.no_grad():
-                train_loss, train_acc = accuracy(model, train_loader, tol,"train")
+                train_loss, train_acc = accuracy(model, train_loader, tol, "train")
                 # print(train_acc)
-                val_loss, val_acc = accuracy(model, test_loader, tol,"val")
+                val_loss, val_acc = accuracy(model, test_loader, tol, "val")
+                train_loss_list.append(train_loss)
+                train_acc_list.append(train_acc)
+                test_loss_list.append(val_loss)
+                test_acc_list.append(val_acc)
                 print(train_loss, train_acc, val_loss, val_acc)
                 # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
     torch.save(model, "models/mnist_new")
+    np.savetxt("train_loss", train_loss_list)
+    np.savetxt("train_acc", train_acc_list)
+    np.savetxt("test_loss", test_loss_list)
+    np.savetxt("test_acc", test_acc_list)
