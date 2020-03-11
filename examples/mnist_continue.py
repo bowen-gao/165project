@@ -390,7 +390,7 @@ if __name__ == '__main__':
         loss.backward()
         optimizer.step()
 
-        if itr != 0 and itr % batches_per_epoch == 0:
+        if itr % batches_per_epoch == -1:
             with torch.no_grad():
                 train_loss, train_acc = accuracy(model, train_loader, tol, "train")
                 # print(train_acc)
