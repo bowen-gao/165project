@@ -247,16 +247,17 @@ def one_hot(x, K):
 
 def accuracy(model, dataset_loader, tol):
     total_correct = 0
+    total_loss = 0.0
     for x, y in dataset_loader:
         x = x.to(device)
+        step_sizes, logits = model(x, tol)
+        total_loss += criterion(logits, y).cpu().detach().item()
         y = one_hot(np.array(y.numpy()), 10)
-
         target_class = np.argmax(y, axis=1)
-        _, temp = model(x, tol)
-        temp = temp.cpu().detach().numpy()
-        predicted_class = np.argmax(temp, axis=1)
+        logits = logits.cpu().detach().numpy()
+        predicted_class = np.argmax(logits, axis=1)
         total_correct += np.sum(predicted_class == target_class)
-    return total_correct / len(dataset_loader.dataset)
+    return total_loss/len(dataset_loader.dataset), total_correct / len(dataset_loader.dataset)
 
 
 def count_parameters(model):
@@ -383,10 +384,10 @@ if __name__ == '__main__':
 
         if itr != 0 and itr % batches_per_epoch == 0:
             with torch.no_grad():
-                # train_acc = accuracy(model, train_eval_loader, tol)
+                train_loss, train_acc = accuracy(model, train_loader, tol)
                 # print(train_acc)
-                val_acc = accuracy(model, test_loader, tol)
-                print(val_acc)
+                val_loss, val_acc = accuracy(model, test_loader, tol)
+                print(train_loss, train_acc, val_loss, val_acc)
                 # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
     torch.save(model, "models/mnist_new")
