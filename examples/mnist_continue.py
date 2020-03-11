@@ -250,8 +250,9 @@ def accuracy(model, dataset_loader, tol):
     total_loss = 0.0
     for x, y in dataset_loader:
         x = x.to(device)
+        temp_y = y.to(device)
         step_sizes, logits = model(x, tol)
-        total_loss += criterion(logits, y).cpu().detach().item()
+        total_loss += criterion(logits, temp_y).cpu().detach().item()
         y = one_hot(np.array(y.numpy()), 10)
         target_class = np.argmax(y, axis=1)
         logits = logits.cpu().detach().numpy()
