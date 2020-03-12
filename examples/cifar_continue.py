@@ -23,6 +23,7 @@ parser.add_argument('--test_batch_size', type=int, default=1000)
 
 parser.add_argument('--save', type=str, default='./experiment1')
 parser.add_argument('--debug', action='store_true')
+parser.add_argument('--random_select', action='store_true')
 parser.add_argument('--gpu', type=int, default=0)
 args = parser.parse_args()
 
