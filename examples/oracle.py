@@ -190,11 +190,11 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
 
     train_index = np.loadtxt('test.txt')
     index = np.arange(50000)
-    oracle_index = np.delete(index, train_index)
-    train_loader_new = DataLoader(
+    oracle_index = np.arange(5000)
+    oracle_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
-        batch_size=batch_size,
-        shuffle=False, num_workers=2, drop_last=True,
+        batch_size=1,
+        shuffle=False, num_workers=2, drop_last=False,
         sampler=torch.utils.data.SubsetRandomSampler(oracle_index)
     )
 
@@ -207,7 +207,7 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
         batch_size=test_batch_size, shuffle=False, num_workers=2, drop_last=True
     )
 
-    return train_loader, test_loader, train_eval_loader, train_loader_new
+    return train_loader, test_loader, train_eval_loader, oracle_loader
 
 
 def inf_generator(iterable):
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     logger.info('Number of parameters: {}'.format(count_parameters(model)))
     '''
     # model = NODEIMG()
-    model = torch.load('aaa', map_location=device)
+    model = torch.load('models/cifar10', map_location=device)
     criterion = nn.CrossEntropyLoss().to(device)
     train_num = 500
     oracle_num = 5000
@@ -393,32 +393,18 @@ if __name__ == '__main__':
     with torch.no_grad():
 
         for i, (x, y) in enumerate(oracle_loader):
-            print("step ",i)
+            print(i)
             # x = images.cuda(async=True)
             # y = labels.cuda(async=True)
             x = x.to(device)
             y = y.to(device)
 
-            img = x.detach().cpu().numpy()
-            img = np.squeeze(img)
-            img = np.moveaxis(img, [0, 1, 2], [-1, -3, -2])
-            plt.imshow(img)
-            plt.savefig('oracle/' + '_label' + str(y.detach().cpu().item()) + 'num' + str(i) + '.png')
-
             step_sizes, logits = model(x, tol)
             stepsizes_list.append(step_sizes)
-            print(len(step_sizes))
             stepnum[y].append(len(step_sizes))
-            #print(stepnum[y])
-            loss = criterion(logits, y)
-            loss_list.append(loss.detach().item())
-            with open("oracle/size_loss.txt", 'w') as f:
-                for i in range(len(stepsizes_list)):
-                    f.write(str(stepsizes_list[i]) + "," + str(loss_list[i]) + "\n")
 
-        for y in range(10):
-            plt.hist(stepnum[y])
-            plt.savefig("hist.png")
+            with open("oracle/allsteps_cifar.txt", 'a') as f:
+                f.write(str(len(step_sizes)) + '\n')
 
 '''
     for itr in range(args.nepochs * batches_per_epoch):
