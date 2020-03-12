@@ -180,8 +180,7 @@ def get_cifar10_loaders(data_aug=False, batch_size=128, test_batch_size=1000, pe
     ])
 
     data = datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_test)
-    indices = np.random.choice(len(data.data), 5000, replace=False)
-    np.savetxt("indices.txt", indices)
+    indices = np.random.choice(len(data.data), 500, replace=False)
     train_loader = DataLoader(
         datasets.CIFAR10(root='.data/CIFAR10', train=True, download=True, transform=transform_train),
         batch_size=batch_size,
@@ -371,7 +370,6 @@ if __name__ == '__main__':
 
         optimizer.zero_grad()
         x, y = data_gen.__next__()
-        print(x)
         x = x.to(device)
         '''
         if itr / train_num < 1:
@@ -396,4 +394,4 @@ if __name__ == '__main__':
                 print(val_acc)
                 # if val_acc > best_acc:
                 #   torch.save({'state_dict': model.state_dict(), 'args': args}, os.path.join(args.save, 'model.pth'))
-    torch.save(model, "models/aaa")
+    torch.save(model, "models/cifar10")
