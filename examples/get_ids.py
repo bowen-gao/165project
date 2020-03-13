@@ -1,12 +1,12 @@
 import numpy as np
 
-allsteps = np.loadtxt('allsteps_500.txt')
+allsteps = np.loadtxt('allsteps_cifar.txt')
 
-ind = np.argpartition(allsteps, -600)[-600:]
+ind = np.argpartition(allsteps, -5000)[-5000:]
 
 
 
-np.savetxt("ids.txt", ind.astype(int), fmt='%i', delimiter=",")
+np.savetxt("cifarids.txt", ind.astype(int), fmt='%i', delimiter=",")
 
 
 
